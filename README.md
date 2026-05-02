@@ -32,7 +32,7 @@ Lynkforge is a production-ready full-stack application that enables users to gen
 - REST APIs  
 
 ### Database
-- MySQL / PostgreSQL *(update if needed)*  
+- MySQL / PostgreSQL 
 
 ---
 
