@@ -1,105 +1,109 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import TextField from './TextField';
-import { Link, useNavigate } from 'react-router-dom';
-import api from '../api/api';
-import toast from 'react-hot-toast';
-import { useStoreContext } from '../contextApi/ContextApi';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import TextField from "./TextField";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import api from "../api/api";
+import toast from "react-hot-toast";
+import { useStoreContext } from "../contextApi/ContextApi";
+import { fadeUpMountProps, tapScale } from "../utils/motionVariants";
 
 const LoginPage = () => {
-    const navigate = useNavigate();
-    const [loader, setLoader] = useState(false);
-    const { setToken } = useStoreContext();
+  const navigate = useNavigate();
+  const [loader, setLoader] = useState(false);
+  const { setToken } = useStoreContext();
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: {errors}
-    } = useForm({
-        defaultValues: {
-            username: "",
-            email: "",
-            password: "",
-        },
-        mode: "onTouched",
-    });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+    mode: "onTouched",
+  });
 
-    const loginHandler = async (data) => {
-        setLoader(true);
-        try {
-            const { data: response } = await api.post(
-                "/api/auth/public/login",
-                data
-            );
-            console.log(response.token);
-            setToken(response.token);
-            localStorage.setItem("JWT_TOKEN", JSON.stringify(response.token));
-            toast.success("Login Successful!");
-            reset();
-            navigate("/dashboard");
-        } catch (error) {
-            console.log(error);
-            toast.error("Login Failed!")
-        } finally {
-            setLoader(false);
-        }
-    };
+  const loginHandler = async (data) => {
+    setLoader(true);
+    try {
+      const { data: response } = await api.post("/api/auth/public/login", data);
+      setToken(response.token);
+      localStorage.setItem("JWT_TOKEN", JSON.stringify(response.token));
+      toast.success("Welcome back");
+      reset();
+      navigate("/dashboard");
+    } catch {
+      toast.error("Login failed. Check your credentials.");
+    } finally {
+      setLoader(false);
+    }
+  };
 
   return (
-    <div
-        className='min-h-[calc(100vh-64px)] flex justify-center items-center'>
-        <form onSubmit={handleSubmit(loginHandler)}
-            className="sm:w-[450px] w-[360px]  shadow-custom py-8 sm:px-8 px-4 rounded-md">
-            <h1 className="text-center font-serif text-btnColor font-bold lg:text-3xl text-2xl">
-                Login Here
-            </h1>
+    <div className="lx-auth-shell">
+      <motion.form
+        {...fadeUpMountProps(0.06)}
+        onSubmit={handleSubmit(loginHandler)}
+        className="lx-card w-full max-w-[460px] rounded-2xl p-10 sm:p-11"
+      >
+        <div className="space-y-2 text-center">
+          <h1 className="text-[1.85rem] font-extrabold tracking-tight text-[#0f172a] sm:text-[2.1rem] dark:text-[#f8fafc]">
+            Welcome back
+          </h1>
+          <p className="text-[0.9375rem] text-slate-600 dark:text-[#94a3b8]">
+            Sign in to your Lynkforge account
+          </p>
+        </div>
 
-            <hr className='mt-2 mb-5 text-black'/>
+        <div className="mt-11 flex flex-col gap-7">
+          <TextField
+            label="Username"
+            required
+            id="username"
+            type="text"
+            message="Username is required"
+            placeholder="Enter your username"
+            register={register}
+            errors={errors}
+          />
 
-            <div className="flex flex-col gap-3">
-                <TextField
-                    label="UserName"
-                    required
-                    id="username"
-                    type="text"
-                    message="*Username is required"
-                    placeholder="Type your username"
-                    register={register}
-                    errors={errors}
-                />
+          <TextField
+            label="Password"
+            required
+            id="password"
+            type="password"
+            message="Password is required"
+            placeholder="Enter your password"
+            register={register}
+            min={6}
+            errors={errors}
+          />
+        </div>
 
-                <TextField
-                    label="Password"
-                    required
-                    id="password"
-                    type="password"
-                    message="*Password is required"
-                    placeholder="Type your password"
-                    register={register}
-                    min={6}
-                    errors={errors}
-                />
-            </div>
+        <motion.button
+          disabled={loader}
+          type="submit"
+          className="lx-btn-primary mt-11 w-full rounded-xl py-3.5 text-[0.9375rem] font-semibold"
+          {...tapScale}
+        >
+          {loader ? "Signing in…" : "Sign in"}
+        </motion.button>
 
-            <button
-                disabled={loader}
-                type='submit'
-                className='bg-customRed font-semibold text-white  bg-custom-gradient w-full py-2 hover:text-slate-400 transition-colors duration-100 rounded-sm my-3'>
-                {loader ? "Loading..." : "Login"}
-            </button>
-
-            <p className='text-center text-sm text-slate-700 mt-6'>
-                Don't have an account? 
-                <Link
-                    className='font-semibold underline hover:text-black'
-                    to="/register">
-                        <span className='text-btnColor'> SignUp</span>
-                </Link>
-            </p>
-        </form>
+        <p className="mt-11 text-center text-[0.9375rem] text-slate-600 dark:text-[#94a3b8]">
+          Don&apos;t have an account?{" "}
+          <Link
+            className="font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#60a5fa] dark:hover:text-blue-400"
+            to="/register"
+          >
+            Sign up
+          </Link>
+        </p>
+      </motion.form>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

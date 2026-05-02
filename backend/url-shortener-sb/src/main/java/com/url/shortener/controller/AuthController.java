@@ -7,7 +7,6 @@ import com.url.shortener.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,12 +24,13 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest){
         User user = new User();
 
-        user.setUsername(registerRequest.getUsername());
+        user.setUsername(
+                registerRequest.getUsername() != null ? registerRequest.getUsername().trim() : "");
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        user.setPassword(encoder.encode(registerRequest.getPassword()));
+        user.setPassword(registerRequest.getPassword());
 
-        user.setEmail(registerRequest.getEmail());
+        user.setEmail(
+                registerRequest.getEmail() != null ? registerRequest.getEmail().trim() : "");
         user.setRole("ROLE_USER");
 
         userService.registerUser(user);

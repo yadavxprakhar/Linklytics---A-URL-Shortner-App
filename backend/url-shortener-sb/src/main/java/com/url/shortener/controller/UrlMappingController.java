@@ -56,6 +56,9 @@ public class UrlMappingController {
         LocalDateTime start = LocalDateTime.parse(startDate, formatter);
         LocalDateTime end = LocalDateTime.parse(endDate, formatter);
         List<ClickEventDTO> clickEventDTOS = urlMappingService.getClickEventsByDate(shortUrl, start, end);
+        if (clickEventDTOS == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(clickEventDTOS);
     }
 

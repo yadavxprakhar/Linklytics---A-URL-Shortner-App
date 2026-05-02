@@ -1,27 +1,39 @@
-import React from 'react'
-import { FaExclamationTriangle } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
+import { AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { fadeUpMountProps, tapScale } from "../utils/motionVariants";
 
 const ErrorPage = ({ message }) => {
-    const navigate = useNavigate();
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] bg-gray-100 p-6">
-        <FaExclamationTriangle className='text-6xl text-red-500 mb-4' />
-        <h1 className='text-3xl font-bold mb-2 text-gray-800'>
-            Oops! Something went wrong.
-        </h1>
-        <p className='text-gray-600 mb-6 text-center'>
-            {message ? message : "An unexpected error has occured"}
-        </p>
-        <button onClick={() => {
-            navigate("/");
-        }}
-        className='px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition'
-        >
-            Go back to home
-        </button>
-    </div>
-  )
-}
+  const navigate = useNavigate();
 
-export default ErrorPage
+  return (
+    <div className="lx-error-shell">
+      <motion.div
+        {...fadeUpMountProps(0.06)}
+        className="lx-card flex flex-col items-center gap-8 px-10 py-14 sm:max-w-lg sm:p-16"
+      >
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-red-500/11 text-red-600 shadow-md shadow-red-900/[0.06] ring-1 ring-red-900/[0.04] dark:text-red-400 dark:shadow-none dark:ring-0">
+          <AlertTriangle className="size-9" aria-hidden />
+        </div>
+        <div className="space-y-3">
+          <h1 className="text-[1.75rem] font-extrabold tracking-tight text-lx-foreground sm:text-[2rem]">
+            Something went wrong
+          </h1>
+          <p className="text-[0.9375rem] leading-relaxed text-lx-muted">
+            {message ?? "Unexpected error — try again soon."}
+          </p>
+        </div>
+        <motion.button
+          type="button"
+          onClick={() => navigate("/")}
+          className="lx-btn-primary px-10"
+          {...tapScale}
+        >
+          Back to home
+        </motion.button>
+      </motion.div>
+    </div>
+  );
+};
+
+export default ErrorPage;

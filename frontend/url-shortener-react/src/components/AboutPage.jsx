@@ -1,76 +1,85 @@
-import React from "react";
-import { FaLink, FaShareAlt, FaEdit, FaChartLine } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { BarChart3, Link2, Share2, SquarePen } from "lucide-react";
+import { fadeUpProps, staggerChild, staggerParent } from "../utils/motionVariants";
+
+const blocks = [
+  {
+    Icon: Link2,
+    title: "Simple URL Shortening",
+    body: "Create short, memorable links in seconds. Clean interface, zero friction.",
+    iconBg:
+      "border border-blue-500/25 bg-blue-500/14 text-[#2563eb] shadow-inner shadow-blue-900/15 dark:border-blue-400/25 dark:bg-blue-950/75 dark:text-[#60a5fa]",
+  },
+  {
+    Icon: BarChart3,
+    title: "Powerful Analytics",
+    body: "Track every click. Visualize traffic over time and understand your audience.",
+    iconBg:
+      "border border-emerald-500/25 bg-emerald-500/14 text-emerald-600 shadow-inner shadow-emerald-900/15 dark:border-emerald-400/22 dark:bg-emerald-950/70 dark:text-emerald-400",
+  },
+  {
+    Icon: SquarePen,
+    title: "Edit anytime",
+    body: "Rename and retarget short links anytime — reshape campaigns without breaking shared URLs.",
+    iconBg:
+      "border border-violet-500/25 bg-violet-500/14 text-violet-600 shadow-inner shadow-violet-900/15 dark:border-violet-400/25 dark:bg-violet-950/75 dark:text-violet-400",
+  },
+  {
+    Icon: Share2,
+    title: "Share everywhere",
+    body: "Drop into chats, decks, email, or QR codes. Lightning-fast redirects with 99.9% uptime.",
+    iconBg:
+      "border border-orange-400/35 bg-orange-500/14 text-orange-600 shadow-inner shadow-orange-950/25 dark:border-orange-400/22 dark:bg-[rgb(62_39_31)] dark:text-orange-400",
+  },
+];
+
 const AboutPage = () => {
   return (
-    <div className="lg:px-14 sm:px-8 px-5 min-h-[calc(100vh-64px)] pt-2">
-      <div className="bg-white w-full sm:py-10 py-8  ">
-        <h1 className="sm:text-4xl text-slate-800 text-3xl font-bold italic  mb-3">
-          About Linklytics
+    <div className="lx-page-inner lx-section-y">
+      <motion.div
+        {...fadeUpProps(0)}
+        className="mx-auto mb-14 max-w-3xl space-y-5 text-center sm:mb-16 sm:text-left"
+      >
+        <h1 className="text-[2rem] font-extrabold leading-tight tracking-tight text-[#0f172a] sm:text-4xl lg:text-[2.6rem] dark:text-[#f8fafc]">
+          About{" "}
+          <span className="lx-text-brand-gradient">
+            Lynkforge
+          </span>
         </h1>
-        <p className="text-gray-700 text-sm  mb-8 xl:w-[60%] lg:w-[70%] sm:w-[80%] w-full ">
-          Linklytics simplifies URL shortening for efficient sharing. Easily
-          generate, manage, and track your shortened links. Linklytics simplifies
-          URL shortening for efficient sharing. Easily generate, manage, and
-          track your shortened links. Linklytics simplifies URL shortening for
-          efficient sharing. Easily generate, manage, and track your shortened
-          links. Linklytics simplifies URL shortening for efficient sharing.
-          Easily generate, manage, and track your shortened links.
+        <p className="mx-auto max-w-2xl text-[1rem] leading-relaxed text-slate-600 dark:text-[#94a3b8] sm:mx-0">
+          A URL shortener with analytics tuned for clarity — spacing you can trust,
+          blue accents where they count, and themes that stay tasteful whether the
+          room is lit or dark.
         </p>
-        <div className="space-y-5 xl:w-[60%] lg:w-[70%] sm:w-[80%] w-full ">
-          <div className="flex items-start">
-            <FaLink className="text-blue-500 text-3xl mr-4" />
-            <div>
-              <h2 className="sm:text-2xl font-bold text-slate-800">
-                Simple URL Shortening
-              </h2>
-              <p className="text-gray-600">
-                Experience the ease of creating short, memorable URLs in just a
-                few clicks. Our intuitive interface and quick setup process
-                ensure you can start shortening URLs without any hassle.
-              </p>
+      </motion.div>
+
+      <motion.div
+        variants={staggerParent}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-40px 0px" }}
+        className="grid gap-5 sm:grid-cols-2 sm:gap-6"
+      >
+        {blocks.map(({ Icon, title, body, iconBg }) => (
+          <motion.div
+            key={title}
+            variants={staggerChild}
+            className="flex gap-5 rounded-2xl border border-slate-200 bg-white p-7 shadow-soft dark:border-white/[0.1] dark:bg-[rgb(21_31_53)] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.04)]"
+          >
+            <div
+              className={`flex size-14 shrink-0 items-center justify-center rounded-xl ${iconBg}`}
+            >
+              <Icon className="size-6 stroke-current" aria-hidden strokeWidth={1.85} />
             </div>
-          </div>
-          <div className="flex items-start">
-            <FaShareAlt className="text-green-500 text-3xl mr-4" />
-            <div>
-              <h2 className="sm:text-2xl font-bold text-slate-800">
-                Powerful Analytics
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-[#0f172a] dark:text-[#f8fafc]">
+                {title}
               </h2>
-              <p className="text-gray-600">
-                Gain insights into your link performance with our comprehensive
-                analytics dashboard. Track clicks, geographical data, and
-                referral sources to optimize your marketing strategies.
-              </p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-[#94a3b8]">{body}</p>
             </div>
-          </div>
-          <div className="flex items-start">
-            <FaEdit className="text-purple-500 text-3xl mr-4" />
-            <div>
-              <h2 className="sm:text-2xl font-bold text-slate-800">
-                Enhanced Security
-              </h2>
-              <p className="text-gray-600">
-                Rest assured with our robust security measures. All shortened
-                URLs are protected with advanced encryption, ensuring your data
-                remains safe and secure.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start">
-            <FaChartLine className="text-red-500 text-3xl mr-4" />
-            <div>
-              <h2 className="sm:text-2xl font-bold text-slate-800">
-                Fast and Reliable
-              </h2>
-              <p className="text-gray-600">
-                Enjoy lightning-fast redirects and high uptime with our reliable
-                infrastructure. Your shortened URLs will always be available and
-                responsive, ensuring a seamless experience for your users.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        ))}
+      </motion.div>
     </div>
   );
 };

@@ -1,6 +1,267 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  /* Animated mesh for dark ambient (paused via prefers-reduced-motion on parent if needed) */
+  .lx-ambient-mesh {
+    background-image:
+      radial-gradient(at 42% 12%, rgb(56 132 255 / 0.18) 0px, transparent 52%),
+      radial-gradient(at 88% 32%, rgb(147 119 246 / 0.15) 0px, transparent 48%),
+      radial-gradient(at 18% 78%, rgb(34 162 217 / 0.12) 0px, transparent 55%);
+    background-size: 145% 145%;
+    animation: lx-mesh-drift 32s ease-in-out infinite;
+  }
+
+  @keyframes lx-mesh-drift {
+    0%,
+    100% {
+      background-position: 12% 8%, 88% 18%, 20% 90%;
+      filter: saturate(105%) hue-rotate(0deg);
+    }
+    35% {
+      background-position: 52% 16%, 60% 70%, 74% 32%;
+      filter: saturate(115%) hue-rotate(8deg);
+    }
+    70% {
+      background-position: 88% 38%, 30% 22%, 12% 88%;
+      filter: saturate(112%) hue-rotate(-6deg);
+    }
+  }
+
+  .lx-grain-overlay {
+    background-image: radial-gradient(rgb(248 250 252 / 0.45) 0.42px, transparent 0.5px);
+    background-size: 2.75px 2.75px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lx-ambient-mesh {
+      animation: none;
+      filter: none;
+    }
+
+    .lx-light-mesh {
+      animation: none;
+    }
+  }
+
+  /* Light ambient — restrained blue / violet wash */
+  .lx-light-mesh {
+    mix-blend-mode: multiply;
+    background-image:
+      radial-gradient(at 76% -8%, rgb(191 219 254 / 0.55) 0px, transparent 52%),
+      radial-gradient(at 8% 38%, rgb(238 242 255 / 0.4) 0px, transparent 46%),
+      radial-gradient(at 58% 92%, rgb(224 242 254 / 0.38) 0px, transparent 50%);
+    background-size: 125% 130%;
+    animation: lx-light-drift 38s ease-in-out infinite alternate;
+  }
+
+  @keyframes lx-light-drift {
+    0% {
+      background-position: 0% 0%, 100% 42%, 40% 100%;
+      opacity: 0.94;
+    }
+    100% {
+      background-position: 100% 18%, 0% 78%, 60% 0%;
+      opacity: 1;
+    }
+  }
+
+  /* Page shell — consistent max-width / horizontal padding */
+  .lx-page-inner {
+    @apply mx-auto w-full max-w-6xl px-6 lg:px-8;
+  }
+
+  .lx-section-y {
+    @apply py-16 lg:py-24;
+  }
+
+  .lx-page-narrow {
+    @apply max-w-3xl;
+  }
+
+  .lx-page-inner.lx-page-narrow {
+    @apply max-w-3xl;
+  }
+
+  .lx-dashboard-shell {
+    @apply min-h-[calc(100vh-theme(spacing.navbar))] py-16 lg:pb-24 lg:pt-12;
+  }
+
+  .lx-auth-shell {
+    @apply flex min-h-[calc(100vh-theme(spacing.navbar))] w-full items-center justify-center px-6 py-16 sm:py-20;
+  }
+
+  .lx-error-shell {
+    @apply flex min-h-[calc(100vh-theme(spacing.navbar))] flex-col items-center justify-center px-6 py-24 text-center;
+  }
+
+  .lx-footer-inner {
+    @apply mx-auto max-w-6xl px-6 pb-14 pt-14 lg:px-8 lg:pb-16 lg:pt-16;
+  }
+}
+
+:root {
+  --lx-page: #f8fafc;
+  --lx-surface: #ffffff;
+  --lx-elevated: #ffffff;
+  --lx-text-primary: #0f172a;
+  --lx-text-secondary: #475569;
+  --lx-border: #e2e8f0;
+}
+
+.dark {
+  --lx-page: #0b1220;
+  --lx-surface: #111827;
+  --lx-elevated: #1e293b;
+  --lx-text-primary: #e2e8f0;
+  --lx-text-secondary: #94a3b8;
+  --lx-border: #1f2937;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth antialiased motion-safe:transition-[color,background-color] motion-safe:duration-500 motion-safe:ease-out;
+  }
+
+  body {
+    @apply bg-lx-page font-sans text-lx-foreground motion-safe:transition-[background-color,color] motion-safe:duration-[420ms] motion-safe:ease-out;
+  }
+
+  /* Let animated dark-layer show through footer of viewport */
+  .dark html {
+    background-color: #050a14;
+  }
+
+  .dark body {
+    @apply bg-transparent;
+  }
+
+  html:not(.dark) {
+    background-color: #f8fafc;
+  }
+
+  html:not(.dark) body {
+    @apply bg-transparent;
+  }
+}
+
+@layer components {
+  /* Primary brand gradient */
+  .lx-btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-55 disabled:scale-100;
+    background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+    box-shadow:
+      0 2px 6px rgb(37 99 235 / 0.22),
+      0 1px 2px rgb(15 23 42 / 0.06),
+      inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+
+  .lx-btn-primary:hover:not(:disabled) {
+    filter: brightness(1.07);
+    transform: scale(1.02);
+    box-shadow:
+      0 4px 14px rgb(37 99 235 / 0.28),
+      0 1px 3px rgb(15 23 42 / 0.08),
+      inset 0 1px 0 rgb(255 255 255 / 0.15);
+  }
+
+  /* Secondary / outline */
+  .lx-btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-lx-border bg-lx-surface px-5 py-2.5 text-sm font-semibold text-lx-foreground shadow-md shadow-slate-900/[0.05] transition-all duration-300 dark:border-lx-border dark:!bg-lx-elevated dark:shadow-none;
+  }
+
+  .lx-btn-secondary:hover {
+    @apply border-blue-500/40 bg-blue-50/80 shadow-lg shadow-slate-900/[0.07] dark:border-blue-500/30 dark:bg-slate-800/90 dark:shadow-none;
+    transform: scale(1.02);
+  }
+
+  /* Ghost / text actions */
+  .lx-btn-ghost {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-lx-muted transition-all duration-200 hover:bg-black/[0.045] hover:text-lx-foreground dark:hover:bg-white/[0.06];
+  }
+
+  /* Card surface — light: paper stack; dark: lifted panel (border + depth — reads off ambient mesh). */
+  .lx-card {
+    @apply rounded-xl border border-[#e2e8f0] bg-lx-surface shadow-md shadow-slate-900/[0.07] ring-1 ring-slate-900/[0.03] transition-[box-shadow,border-color,background-color] duration-300 motion-reduce:transition-none motion-safe:hover:border-slate-300/85 motion-safe:hover:shadow-xl motion-safe:hover:shadow-slate-900/[0.09];
+  }
+
+  .dark .lx-card {
+    border-color: rgb(255 255 255 / 0.12);
+    background: linear-gradient(
+      165deg,
+      rgb(52 62 86) 0%,
+      rgb(37 48 68) 38%,
+      rgb(30 41 59) 72%,
+      rgb(24 33 52) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.075),
+      0 0 0 1px rgb(0 0 0 / 0.5),
+      0 28px 56px -16px rgb(0 0 0 / 0.75),
+      0 16px 32px -18px rgb(59 130 246 / 0.14);
+  }
+
+  .dark .lx-card:hover {
+    border-color: rgb(96 165 250 / 0.26);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.09),
+      0 0 0 1px rgb(0 0 0 / 0.55),
+      0 32px 64px -14px rgb(0 0 0 / 0.78),
+      0 18px 36px -16px rgb(129 140 248 / 0.18);
+  }
+
+  /* Form control */
+  .lx-input {
+    @apply w-full rounded-lg border border-lx-border bg-lx-surface px-3.5 py-3 text-sm text-lx-foreground shadow-sm shadow-slate-900/[0.03] outline-none ring-1 ring-transparent transition-[border-color,box-shadow,ring-color,background-color] placeholder:text-lx-muted dark:bg-slate-950/75 dark:shadow-[inset_0_1px_3px_rgb(0_0_0/_0.45)] dark:ring-transparent dark:border-white/[0.12];
+  }
+
+  .dark .lx-input:focus {
+    border-color: rgb(129 140 248 / 0.45);
+    box-shadow:
+      inset 0 1px 3px rgb(0 0 0 / 0.4),
+      0 0 0 3px rgb(59 130 246 / 0.28);
+  }
+
+  .lx-input:focus {
+    border-color: rgb(37 99 235 / 0.5);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 0.17);
+    @apply ring-blue-500/15;
+  }
+
+  .lx-label {
+    @apply mb-2 block text-sm font-medium text-lx-foreground;
+  }
+
+  /* Reference UI — brand gradient headline fragment, SaaS badges, hero outline CTA */
+  .lx-text-brand-gradient {
+    @apply bg-gradient-to-r from-[#3b82f6] via-[#6366f1] to-[#818cf8] bg-clip-text text-transparent;
+  }
+
+  .lx-badge {
+    @apply inline-flex items-center gap-2 rounded-full border border-blue-500/25 bg-blue-500/[0.09] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-600 dark:border-blue-400/30 dark:bg-blue-500/[0.14] dark:text-blue-300;
+  }
+
+  .lx-btn-outline-hero {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-8 py-3.5 text-sm font-semibold text-slate-900 transition-all duration-300 hover:border-slate-400 hover:bg-slate-50 dark:border-white/[0.16] dark:bg-slate-950/50 dark:text-white dark:hover:bg-white/[0.06];
+  }
+
+  .dark .lx-btn-outline-hero:hover {
+    border-color: rgb(255 255 255 / 0.28);
+  }
+
+  /* Nav ghost — bordered login matching reference chrome */
+  .lx-btn-nav-login {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-300 bg-transparent px-5 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-100 dark:text-white;
+  }
+
+  .dark .lx-btn-nav-login {
+    border-color: rgb(255 255 255 / 0.22);
+  }
+
+  .dark .lx-btn-nav-login:hover {
+    background-color: rgb(255 255 255 / 0.07);
+  }
+}

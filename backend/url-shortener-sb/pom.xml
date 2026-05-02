@@ -11,8 +11,8 @@
 	<groupId>com.url</groupId>
 	<artifactId>url-shortener-sb</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>url-shortener-sb</name>
-	<description>Demo project for Spring Boot</description>
+	<name>Lynkforge API</name>
+	<description>Lynkforge URL shortener backend (Spring Boot)</description>
 	<url/>
 	<licenses>
 		<license/>

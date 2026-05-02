@@ -1,82 +1,116 @@
-import React, { useState } from 'react'
-import Graph from './Graph'
-import { dummyData } from '../../dummyData/data'
-import { useStoreContext } from '../../contextApi/ContextApi'
-import { useFetchMyShortUrls, useFetchTotalClicks } from '../../hooks/useQuery'
-import ShortenPopUp from './ShortenPopUp'
-import { FaLink } from 'react-icons/fa'
-import ShortenUrlList from './ShortenUrlList'
-import { useNavigate } from 'react-router-dom'
-import Loader from '../Loader'
+import { useState } from "react";
+import Graph from "./Graph";
+import { motion } from "framer-motion";
+import { useStoreContext } from "../../contextApi/ContextApi";
+import { useFetchMyShortUrls, useFetchTotalClicks } from "../../hooks/useQuery";
+import ShortenPopUp from "./ShortenPopUp";
+import { Link2 } from "lucide-react";
+import ShortenUrlList from "./ShortenUrlList";
+import { useNavigate } from "react-router-dom";
+import Loader from "../Loader";
+import { fadeUpMountProps, tapScale } from "../../utils/motionVariants";
 
 const DashboardLayout = () => {
-    // const refetch = false;
-    const { token } = useStoreContext();
-    const navigate = useNavigate();
-    const [shortenPopUp, setShortenPopUp] = useState(false);
+  const { token } = useStoreContext();
+  const navigate = useNavigate();
+  const [shortenPopUp, setShortenPopUp] = useState(false);
 
-    // console.log(useFetchTotalClicks(token, onError));
+  const { isLoading, data: myShortenUrls, refetch } = useFetchMyShortUrls(
+    token,
+    onError
+  );
 
-    const {isLoading, data: myShortenUrls, refetch } = useFetchMyShortUrls(token, onError)
-    
-    const {isLoading: loader, data: totalClicks} = useFetchTotalClicks(token, onError)
+  const { isLoading: loader, data: totalClicks } = useFetchTotalClicks(
+    token,
+    onError
+  );
 
-    function onError() {
-      navigate("/error");
-    }
+  function onError() {
+    navigate("/error");
+  }
 
   return (
-    <div className="lg:px-14 sm:px-8 px-4 min-h-[calc(100vh-64px)]">
-        {loader ? ( 
-            <Loader />
-        ): ( 
-        <div className="lg:w-[90%] w-full mx-auto py-16">
-            <div className=" h-96 relative ">
-                {totalClicks.length === 0 && (
-                     <div className="absolute flex flex-col  justify-center sm:items-center items-end  w-full left-0 top-0 bottom-0 right-0 m-auto">
-                     <h1 className=" text-slate-800 font-serif sm:text-2xl text-[18px] font-bold mb-1">
-                       No Data For This Time Period
-                     </h1>
-                     <h3 className="sm:w-96 w-[90%] sm:ml-0 pl-6 text-center sm:text-lg text-sm text-slate-600 ">
-                       Share your short link to view where your engagements are
-                       coming from
-                     </h3>
-                   </div>
-                )}
-                <Graph graphData={totalClicks} />
-            </div>
-            <div className='py-5 sm:text-end text-center'>
-                <button
-                    className='bg-custom-gradient px-4 py-2 rounded-md text-white'
-                    onClick={() => setShortenPopUp(true)}>
-                    Create a New Short URL
-                </button>
-            </div>
+    <div className="lx-page-inner lx-dashboard-shell">
+      {loader ? (
+        <Loader />
+      ) : (
+        <div className="space-y-14">
+          <motion.header {...fadeUpMountProps(0.03)} className="space-y-2">
+            <h1 className="text-[1.85rem] font-extrabold tracking-tight text-lx-foreground sm:text-[2rem]">
+              Dashboard
+            </h1>
+            <p className="max-w-prose text-[0.9375rem] leading-relaxed text-lx-muted">
+              Monitor clicks over time and manage shortcuts.
+            </p>
+          </motion.header>
 
-            <div>
-              {!isLoading && myShortenUrls.length === 0 ? (
-                <div className="flex justify-center pt-16">
-                  <div className="flex gap-2 items-center justify-center  py-6 sm:px-8 px-5 rounded-md   shadow-lg  bg-gray-50">
-                    <h1 className="text-slate-800 font-montserrat   sm:text-[18px] text-[14px] font-semibold mb-1 ">
-                      You haven't created any short link yet
-                    </h1>
-                    <FaLink className="text-blue-500 sm:text-xl text-sm " />
-                  </div>
-              </div>
-              ) : (
-                  <ShortenUrlList data={myShortenUrls} />
+          <motion.div {...fadeUpMountProps(0.08)} className="relative">
+            <div className="lx-card relative min-h-[23rem] overflow-hidden p-5 sm:min-h-[25rem] sm:p-8">
+              {totalClicks.length === 0 && (
+                <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
+                  <p className="text-base font-semibold text-lx-foreground sm:text-lg">
+                    No data for this period
+                  </p>
+                  <p className="mt-2 max-w-md text-[0.9375rem] text-lx-muted">
+                    Share shortcuts to populate daily totals.
+                  </p>
+                </div>
               )}
+              <Graph graphData={totalClicks} />
             </div>
+          </motion.div>
+
+          <motion.div
+            {...fadeUpMountProps(0.1)}
+            className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="text-[0.9375rem] text-lx-muted">
+              {(myShortenUrls?.length ?? 0) > 0
+                ? `${myShortenUrls.length} short link${myShortenUrls.length === 1 ? "" : "s"}`
+                : "No links yet"}
+            </p>
+            <motion.button
+              type="button"
+              className="lx-btn-primary self-start sm:self-auto"
+              onClick={() => setShortenPopUp(true)}
+              {...tapScale}
+            >
+              Create short URL
+            </motion.button>
+          </motion.div>
+
+          <div>
+            {!isLoading && (myShortenUrls?.length ?? 0) === 0 ? (
+              <motion.div
+                {...fadeUpMountProps(0.12)}
+                className="lx-card flex flex-col items-center justify-center gap-4 px-8 py-20 text-center"
+              >
+                <Link2
+                  className="size-9 text-blue-600 dark:text-blue-400"
+                  aria-hidden
+                />
+                <p className="text-base font-semibold text-lx-foreground">
+                  You haven&apos;t created a short link yet
+                </p>
+                <p className="max-w-md text-[0.9375rem] leading-relaxed text-lx-muted">
+                  Use the button above to paste a URL and copy your first
+                  Lynkforge link.
+                </p>
+              </motion.div>
+            ) : (
+              <ShortenUrlList data={myShortenUrls} />
+            )}
+          </div>
         </div>
-        )}
+      )}
 
-        <ShortenPopUp
-          refetch={refetch}
-          open={shortenPopUp}
-          setOpen={setShortenPopUp}
-        />
+      <ShortenPopUp
+        refetch={refetch}
+        open={shortenPopUp}
+        setOpen={setShortenPopUp}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default DashboardLayout
+export default DashboardLayout;

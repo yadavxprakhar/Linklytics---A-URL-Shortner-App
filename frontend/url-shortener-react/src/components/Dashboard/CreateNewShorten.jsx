@@ -1,16 +1,16 @@
-import React, { useState } from 'react'
-import { useStoreContext } from '../../contextApi/ContextApi';
-import { useForm } from 'react-hook-form';
-import { data } from 'autoprefixer';
-import TextField from '../TextField';
-import { Tooltip } from '@mui/material';
-import { RxCross2 } from 'react-icons/rx';
-import api from '../../api/api';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { useStoreContext } from "../../contextApi/ContextApi";
+import { useForm } from "react-hook-form";
+import TextField from "../TextField";
+import { X } from "lucide-react";
+import { motion } from "framer-motion";
+import api from "../../api/api";
+import toast from "react-hot-toast";
+import { fadeUpMountProps, tapScale } from "../../utils/motionVariants";
 
-const CreateNewShorten = ({ setOpen, refetch }) => {
-    const { token } = useStoreContext();
-    const [loading, setLoading] = useState(false);
+const CreateNewShorten = ({ setOpen, refetch: _refetch }) => {
+  const { token } = useStoreContext();
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -27,82 +27,82 @@ const CreateNewShorten = ({ setOpen, refetch }) => {
   const createShortUrlHandler = async (data) => {
     setLoading(true);
     try {
-        const { data: res } = await api.post("/api/urls/shorten", data, {
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              Authorization: "Bearer " + token,
-            },
-          });
+      const { data: res } = await api.post("/api/urls/shorten", data, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: "Bearer " + token,
+        },
+      });
 
-          const shortenUrl = `${import.meta.env.VITE_REACT_FRONT_END_URL + "/s/" + `${res.shortUrl}`}`;
-          navigator.clipboard.writeText(shortenUrl).then(() => {
-            toast.success("Short URL Copied to Clipboard", {
-                position: "bottom-center",
-                className: "mb-5",
-                duration: 3000,
-            });
-          });
+      const shortenUrl = `${import.meta.env.VITE_REACT_FRONT_END_URL + "/s/" + `${res.shortUrl}`}`;
+      await navigator.clipboard.writeText(shortenUrl);
+      toast.success("Short URL copied to clipboard");
 
-          // await refetch();
-          reset();
-          setOpen(false);
-    } catch (error) {
-        toast.error("Create ShortURL Failed");
+      reset();
+      setOpen(false);
+    } catch {
+      toast.error("Could not create short URL");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
-
   return (
-    <div className=" flex justify-center items-center bg-white rounded-md">
-    <form
+    <motion.div
+      {...fadeUpMountProps(0.04)}
+      className="lx-card w-full max-w-[440px] shadow-lifted"
+    >
+      <form
         onSubmit={handleSubmit(createShortUrlHandler)}
-        className="sm:w-[450px] w-[360px] relative  shadow-custom pt-8 pb-5 sm:px-8 px-4 rounded-lg"
+        className="relative p-6 sm:p-8"
       >
+        <motion.button
+          type="button"
+          disabled={loading}
+          onClick={() => setOpen(false)}
+          className="absolute right-3 top-3 rounded-lg p-2 text-lx-muted transition-colors hover:bg-black/[0.04] hover:text-lx-foreground dark:hover:bg-white/[0.06]"
+          aria-label="Close"
+          {...tapScale}
+        >
+          <X className="size-5" />
+        </motion.button>
 
-        <h1 className="font-montserrat sm:mt-0 mt-3 text-center  font-bold sm:text-2xl text-[22px] text-slate-800 ">
-                Create New Shorten Url
-        </h1>
+        <h2
+          id="create-short-url-title"
+          className="pr-10 text-center text-xl font-bold tracking-tight text-lx-foreground sm:text-[1.35rem]"
+        >
+          New short link
+        </h2>
+        <p className="mt-2 text-center text-[0.9375rem] text-lx-muted">
+          Paste a destination URL — we&apos;ll copy the short link when it&apos;s
+          ready.
+        </p>
 
-        <hr className="mt-2 sm:mb-5 mb-3 text-slate-950" />
-
-        <div>
+        <div className="mt-8">
           <TextField
-            label="Enter URL"
+            label="Destination URL"
             required
             id="originalUrl"
             placeholder="https://example.com"
             type="url"
-            message="Url is required"
+            message="URL is required"
             register={register}
             errors={errors}
           />
         </div>
 
-        <button
-          className="bg-customRed font-semibold text-white w-32  bg-custom-gradient  py-2  transition-colors  rounded-md my-3"
-          type="text"
+        <motion.button
+          disabled={loading}
+          className="lx-btn-primary mt-8 w-full py-3"
+          type="submit"
+          {...tapScale}
         >
-          {loading ? "Loading..." : "Create"}
-        </button>
-
-        {!loading && (
-          <Tooltip title="Close">
-            <button
-              disabled={loading}
-              onClick={() => setOpen(false)}
-              className=" absolute right-2 top-2  "
-            >
-              <RxCross2 className="text-slate-800   text-3xl" />
-            </button>
-          </Tooltip>
-        )}
-
+          {loading ? "Creating…" : "Create & copy"}
+        </motion.button>
       </form>
-    </div>
-  )
-}
+    </motion.div>
+  );
+};
 
-export default CreateNewShorten
+export default CreateNewShorten;

@@ -1,63 +1,56 @@
 const TextField = ({
-    label,
-    id,
-    type,
-    errors,
-    register,
-    required,
-    message,
-    className,
-    min,
-    value,
-    placeholder,
-  }) => {
-    return (
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor={id}
-          className={`${className ? className : ""} font-semibold text-md  `}
-        >
-          {label}
-        </label>
-  
-        <input
-          type={type}
-          id={id}
-          placeholder={placeholder}
-          className={`${
-            className ? className : ""
-          } px-2 py-2 border   outline-none bg-transparent  text-slate-700 rounded-md ${
-            errors[id]?.message ? "border-red-500" : "border-slate-600"
-          }`}
-          {...register(id, {
-            required: { value: required, message },
-            minLength: min
-              ? { value: min, message: "Minimum 6 character is required" }
-              : null,
-  
-            pattern:
-              type === "email"
-                ? {
-                    value: /^[a-zA-Z0-9]+@(?:[a-zA-Z0-9]+\.)+com+$/,
-                    message: "Invalid email",
-                  }
-                : type === "url"
+  label,
+  id,
+  type,
+  errors,
+  register,
+  required,
+  message,
+  className,
+  min,
+  placeholder,
+}) => {
+  const hasError = Boolean(errors[id]?.message);
+
+  return (
+    <div className={`flex flex-col gap-2 ${className ?? ""}`}>
+      <label htmlFor={id} className="lx-label">
+        {label}
+      </label>
+
+      <input
+        type={type}
+        id={id}
+        placeholder={placeholder}
+        className={`lx-input ${hasError ? "border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgb(239_68_68/0.2)] dark:border-red-400" : ""}`}
+        {...register(id, {
+          required: required ? message : false,
+          minLength: min
+            ? { value: min, message: "Minimum 6 characters are required" }
+            : undefined,
+          pattern:
+            type === "email"
+              ? {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Invalid email address",
+                }
+              : type === "url"
                 ? {
                     value:
                       /^(https?:\/\/)?(([a-zA-Z0-9\u00a1-\uffff-]+\.)+[a-zA-Z\u00a1-\uffff]{2,})(:\d{2,5})?(\/[^\s]*)?$/,
-                    message: "Please enter a valid url",
+                    message: "Please enter a valid URL",
                   }
-                : null,
-          })}
-        />
-  
-        {errors[id]?.message && (
-          <p className="text-sm font-semibold text-red-600 mt-0">
-            {errors[id]?.message}*
-          </p>
-        )}
-      </div>
-    );
-  };
-  
-  export default TextField;
+                : undefined,
+        })}
+      />
+
+      {hasError ? (
+        <p className="text-sm font-medium text-red-600 dark:text-red-400">
+          {errors[id]?.message}
+        </p>
+      ) : null}
+    </div>
+  );
+};
+
+export default TextField;

@@ -1,111 +1,117 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import TextField from './TextField';
-import { Link, useNavigate } from 'react-router-dom';
-import api from '../api/api';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import TextField from "./TextField";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import api from "../api/api";
+import toast from "react-hot-toast";
+import { fadeUpMountProps, tapScale } from "../utils/motionVariants";
 
 const RegisterPage = () => {
-    const navigate = useNavigate();
-    const [loader, setLoader] = useState(false);
+  const navigate = useNavigate();
+  const [loader, setLoader] = useState(false);
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: {errors}
-    } = useForm({
-        defaultValues: {
-            username: "",
-            email: "",
-            password: "",
-        },
-        mode: "onTouched",
-    });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+    },
+    mode: "onTouched",
+  });
 
-    const registerHandler = async (data) => {
-        setLoader(true);
-        try {
-            const { data: response } = await api.post(
-                "/api/auth/public/register",
-                data
-            );
-            reset();
-            navigate("/login");
-            toast.success("Registeration Successful!")
-        } catch (error) {
-            console.log(error);
-            toast.error("Registeration Failed!")
-        } finally {
-            setLoader(false);
-        }
-    };
+  const registerHandler = async (data) => {
+    setLoader(true);
+    try {
+      await api.post("/api/auth/public/register", data);
+      reset();
+      navigate("/login");
+      toast.success("Account created — you can log in now");
+    } catch {
+      toast.error("Registration failed");
+    } finally {
+      setLoader(false);
+    }
+  };
 
   return (
-    <div
-        className='min-h-[calc(100vh-64px)] flex justify-center items-center'>
-        <form onSubmit={handleSubmit(registerHandler)}
-            className="sm:w-[450px] w-[360px]  shadow-custom py-8 sm:px-8 px-4 rounded-md">
-            <h1 className="text-center font-serif text-btnColor font-bold lg:text-3xl text-2xl">
-                Register Here
-            </h1>
+    <div className="lx-auth-shell">
+      <motion.form
+        {...fadeUpMountProps(0.06)}
+        onSubmit={handleSubmit(registerHandler)}
+        className="lx-card w-full max-w-[460px] rounded-2xl p-10 sm:p-11"
+      >
+        <div className="space-y-2 text-center">
+          <h1 className="text-[1.85rem] font-extrabold tracking-tight text-[#0f172a] sm:text-[2.1rem] dark:text-[#f8fafc]">
+            Create an account
+          </h1>
+          <p className="text-[0.9375rem] text-slate-600 dark:text-[#94a3b8]">
+            Start shortening links for free
+          </p>
+        </div>
 
-            <hr className='mt-2 mb-5 text-black'/>
+        <div className="mt-11 flex flex-col gap-7">
+          <TextField
+            label="Username"
+            required
+            id="username"
+            type="text"
+            message="Username is required"
+            placeholder="Choose a username"
+            register={register}
+            errors={errors}
+          />
 
-            <div className="flex flex-col gap-3">
-                <TextField
-                    label="UserName"
-                    required
-                    id="username"
-                    type="text"
-                    message="*Username is required"
-                    placeholder="Type your username"
-                    register={register}
-                    errors={errors}
-                />
+          <TextField
+            label="Email"
+            required
+            id="email"
+            type="email"
+            message="Email is required"
+            placeholder="you@example.com"
+            register={register}
+            errors={errors}
+          />
 
-                <TextField
-                    label="Email"
-                    required
-                    id="email"
-                    type="email"
-                    message="*Email is required"
-                    placeholder="Type your email"
-                    register={register}
-                    errors={errors}
-                />
+          <TextField
+            label="Password"
+            required
+            id="password"
+            type="password"
+            message="Password is required"
+            placeholder="Choose a secure password"
+            register={register}
+            min={6}
+            errors={errors}
+          />
+        </div>
 
-                <TextField
-                    label="Password"
-                    required
-                    id="password"
-                    type="password"
-                    message="*Password is required"
-                    placeholder="Type your password"
-                    register={register}
-                    min={6}
-                    errors={errors}
-                />
-            </div>
+        <motion.button
+          disabled={loader}
+          type="submit"
+          className="lx-btn-primary mt-11 w-full rounded-xl py-3.5 text-[0.9375rem] font-semibold"
+          {...tapScale}
+        >
+          {loader ? "Creating account…" : "Create account"}
+        </motion.button>
 
-            <button
-                disabled={loader}
-                type='submit'
-                className='bg-customRed font-semibold text-white  bg-custom-gradient w-full py-2 hover:text-slate-400 transition-colors duration-100 rounded-sm my-3'>
-                {loader ? "Loading..." : "Register"}
-            </button>
-
-            <p className='text-center text-sm text-slate-700 mt-6'>
-                Already have an account? 
-                <Link
-                    className='font-semibold underline hover:text-black'
-                    to="/login">
-                        <span className='text-btnColor'> Login</span>
-                </Link>
-            </p>
-        </form>
+        <p className="mt-11 text-center text-[0.9375rem] text-slate-600 dark:text-[#94a3b8]">
+          Already have an account?{" "}
+          <Link
+            className="font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#60a5fa] dark:hover:text-blue-400"
+            to="/login"
+          >
+            Sign in
+          </Link>
+        </p>
+      </motion.form>
     </div>
-  )
-}
+  );
+};
 
-export default RegisterPage
+export default RegisterPage;
