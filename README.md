@@ -1,6 +1,6 @@
-# 🚀 Linklytics — Full-Stack URL Shortener with Analytics
+# 🚀 Lynkforge — Full-Stack URL Shortener with Analytics
 
-Linklytics is a production-ready full-stack application that enables users to generate, manage, and track shortened URLs with secure authentication and real-time analytics.
+Lynkforge is a production-ready full-stack application that enables users to generate, manage, and track shortened URLs with secure authentication and real-time analytics.
 
 > Built to demonstrate strong backend architecture, secure API design, and modern frontend development.
 
@@ -48,7 +48,7 @@ Linklytics is a production-ready full-stack application that enables users to ge
 
 ##📁 Project Structure
 ```
-Linklytics-URL-Shortner/
+Lynkforge-URL-Shortner/
 │
 ├── backend/
 │   └── url-shortener-sb/
