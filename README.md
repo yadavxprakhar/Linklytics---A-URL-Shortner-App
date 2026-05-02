@@ -47,7 +47,7 @@ Linklytics is a production-ready full-stack application that enables users to ge
 ---
 
 ##📁 Project Structure
-
+```
 Linklytics-URL-Shortner/
 │
 ├── backend/
@@ -63,3 +63,4 @@ Linklytics-URL-Shortner/
 │       └── .env
 │
 └── README.md
+```
