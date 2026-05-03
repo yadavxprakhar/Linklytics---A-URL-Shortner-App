@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { Fragment, useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import CopyToClipboard from "react-copy-to-clipboard";
 import {
   BarChart3,
@@ -8,6 +9,7 @@ import {
   Copy,
   ExternalLink,
   MousePointerClick,
+  Trash2,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import api from "../../api/api";
@@ -16,14 +18,24 @@ import { useStoreContext } from "../../contextApi/ContextApi";
 import { Hourglass } from "react-loader-spinner";
 import Graph from "./Graph";
 import { cardHoverSpring, tapScale } from "../../utils/motionVariants";
+import { fetchLinkAnalytics } from "../../hooks/useQuery";
 
-const ShortenItem = ({ originalUrl, shortUrl, clickCount, createdDate }) => {
+const ShortenItem = ({
+  originalUrl,
+  shortUrl,
+  clickCount,
+  createdDate,
+  onLinkDeleted,
+  analyticsRange,
+}) => {
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const { token } = useStoreContext();
   const navigate = useNavigate();
   const [isCopied, setIsCopied] = useState(false);
   const [analyticToggle, setAnalyticToggle] = useState(false);
   const [loader, setLoader] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState("");
   const [analyticsData, setAnalyticsData] = useState([]);
 
@@ -42,11 +54,16 @@ const ShortenItem = ({ originalUrl, shortUrl, clickCount, createdDate }) => {
     setAnalyticToggle(!analyticToggle);
   };
 
-  const fetchMyShortUrl = useCallback(async () => {
-    setLoader(true);
+  const deleteHandler = async () => {
+    if (
+      !window.confirm(t("linkCard.deleteConfirm"))
+    ) {
+      return;
+    }
+    setDeleteLoading(true);
     try {
-      const { data } = await api.get(
-        `/api/urls/analytics/${selectedUrl}?startDate=2024-12-01T00:00:00&endDate=2027-12-31T23:59:59`,
+      await api.delete(
+        `/api/urls/${encodeURIComponent(shortUrl)}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -55,14 +72,30 @@ const ShortenItem = ({ originalUrl, shortUrl, clickCount, createdDate }) => {
           },
         }
       );
-      setAnalyticsData(data);
+      onLinkDeleted?.();
+      setAnalyticToggle(false);
+      setAnalyticsData([]);
+    } catch {
+      navigate("/error");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const fetchMyShortUrl = useCallback(async () => {
+    setLoader(true);
+    try {
+      const startDate = analyticsRange?.startDate ?? dayjs().subtract(29, "day").format("YYYY-MM-DD");
+      const endDate = analyticsRange?.endDate ?? dayjs().format("YYYY-MM-DD");
+      const graphData = await fetchLinkAnalytics(token, selectedUrl, startDate, endDate);
+      setAnalyticsData(graphData);
       setSelectedUrl("");
     } catch {
       navigate("/error");
     } finally {
       setLoader(false);
     }
-  }, [selectedUrl, token, navigate]);
+  }, [selectedUrl, token, navigate, analyticsRange]);
 
   useEffect(() => {
     if (selectedUrl) {
@@ -96,8 +129,7 @@ const ShortenItem = ({ originalUrl, shortUrl, clickCount, createdDate }) => {
           <div className="flex flex-wrap items-center gap-6 text-sm font-medium text-lx-foreground">
             <span className="inline-flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
               <MousePointerClick className="size-4" aria-hidden />
-              {clickCount}{" "}
-              {clickCount === 0 || clickCount === 1 ? "click" : "clicks"}
+              {t("linkCard.click", { count: clickCount })}
             </span>
             <span className="inline-flex items-center gap-2 text-lx-muted">
               <Calendar className="size-4 text-lx-foreground/80" aria-hidden />
@@ -119,12 +151,12 @@ const ShortenItem = ({ originalUrl, shortUrl, clickCount, createdDate }) => {
               {isCopied ? (
                 <>
                   <Check className="size-4" aria-hidden />
-                  Copied
+                  {t("linkCard.copied")}
                 </>
               ) : (
                 <>
                   <Copy className="size-4" aria-hidden />
-                  Copy
+                  {t("linkCard.copy")}
                 </>
               )}
             </motion.button>
@@ -137,7 +169,18 @@ const ShortenItem = ({ originalUrl, shortUrl, clickCount, createdDate }) => {
             {...tapScale}
           >
             <BarChart3 className="size-4 text-blue-600 dark:text-blue-400" aria-hidden />
-            Analytics
+            {t("linkCard.analytics")}
+          </motion.button>
+
+          <motion.button
+            type="button"
+            onClick={deleteHandler}
+            disabled={deleteLoading}
+            className="inline-flex gap-2 rounded-lg border border-red-500/35 bg-red-500/10 px-5 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/15"
+            {...tapScale}
+          >
+            <Trash2 className="size-4 shrink-0" aria-hidden />
+            {deleteLoading ? t("linkCard.deleting") : t("linkCard.delete")}
           </motion.button>
         </div>
       </div>
@@ -154,20 +197,20 @@ const ShortenItem = ({ originalUrl, shortUrl, clickCount, createdDate }) => {
                 visible
                 height="48"
                 width="48"
-                ariaLabel="Loading analytics"
+                ariaLabel={t("linkCard.loadingAria")}
                 colors={["#2563eb", "#93c5fd"]}
               />
-              <p className="text-sm text-lx-muted">Loading analytics…</p>
+              <p className="text-sm text-lx-muted">{t("linkCard.loadingAnalytics")}</p>
             </div>
           ) : (
             <>
               {analyticsData.length === 0 && (
                 <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
                   <p className="text-base font-semibold text-lx-foreground">
-                    No data for this period
+                    {t("linkCard.emptyTitle")}
                   </p>
                   <p className="mt-2 max-w-md text-sm text-lx-muted">
-                    Share this link to see daily engagement in the chart below.
+                    {t("linkCard.emptySub")}
                   </p>
                 </div>
               )}

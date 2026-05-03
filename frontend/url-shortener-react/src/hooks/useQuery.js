@@ -1,27 +1,30 @@
 import { useQuery } from "react-query"
 import api from "../api/api"
 
+const authHeaders = (token) => ({
+    headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: "Bearer " + token,
+    },
+});
 
 export const useFetchMyShortUrls = (token, onError) => {
     return useQuery("my-shortenurls",
          async () => {
             return await api.get(
                 "/api/urls/myurls",
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    Authorization: "Bearer " + token,
-                },
-            }
+            authHeaders(token)
         );
     },
           {
-            select: (data) => {
-                const sortedData = data.data.sort(
-                    (a, b) => new Date(b.createdDate) - new Date(a.createdDate)
+            select: (res) => {
+                const rows = Array.isArray(res?.data) ? [...res.data] : [];
+                rows.sort(
+                    (a, b) =>
+                        new Date(b.createdDate) - new Date(a.createdDate)
                 );
-                return sortedData;
+                return rows;
             },
             onError,
             staleTime: 5000
@@ -29,45 +32,91 @@ export const useFetchMyShortUrls = (token, onError) => {
         );
 };
 
-export const useFetchTotalClicks = (token, onError) => {
-    return useQuery("url-totalclick",
-         async () => {
+export const useFetchAnalyticsOverview = (token, startDate, endDate, onError) => {
+    return useQuery(
+        ["analytics-overview", startDate, endDate],
+        async () => {
             return await api.get(
-                "/api/urls/totalClicks?startDate=2024-01-01&endDate=2025-12-31",
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    Authorization: "Bearer " + token,
-                },
-            }
-        );
-    },
-          {
-            select: (data) => {
-                // data.data =>
-                    //  {
-                    //     "2024-01-01": 120,
-                    //     "2024-01-02": 95,
-                    //     "2024-01-03": 110,
-                    //   };
-                      
-                const convertToArray = Object.keys(data.data).map((key) => ({
-                    clickDate: key,
-                    count: data.data[key], // data.data[2024-01-01]
+                `/api/analytics/overview?start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`,
+                authHeaders(token)
+            );
+        },
+        {
+            select: (res) => {
+                const payload = res?.data ?? {};
+                const series = Array.isArray(payload.series) ? payload.series : [];
+                const graphData = series.map((row) => ({
+                    clickDate: row.date,
+                    count: row.clicks,
                 }));
-                // Object.keys(data.data) => ["2024-01-01", "2024-01-02", "2024-01-03"]
-
-                // FINAL:
-                //   [
-                //     { clickDate: "2024-01-01", count: 120 },
-                //     { clickDate: "2024-01-02", count: 95 },
-                //     { clickDate: "2024-01-03", count: 110 },
-                //   ]
-                return convertToArray;
+                return {
+                    graphData,
+                    kpis: {
+                        totalClicks: payload.totalClicks ?? 0,
+                        clicksToday: payload.clicksToday ?? 0,
+                        activeLinks: payload.activeLinks ?? 0,
+                        topLink: payload.topLink ?? null,
+                        previousTotalClicks: payload.previousTotalClicks ?? null,
+                        percentChange: payload.percentChange ?? null,
+                    },
+                };
             },
+            enabled: Boolean(token && startDate && endDate),
             onError,
             staleTime: 5000
-          }
-        );
+        }
+    );
+};
+
+export const fetchLinkAnalytics = async (token, shortUrl, startDate, endDate) => {
+    const { data } = await api.get(
+        `/api/analytics/links/${encodeURIComponent(shortUrl)}?start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`,
+        authHeaders(token)
+    );
+    const series = Array.isArray(data?.series) ? data.series : [];
+    return series.map((row) => ({ clickDate: row.date, count: row.clicks }));
+};
+
+export const useFetchAnalyticsBreakdown = (token, startDate, endDate, onError) => {
+    return useQuery(
+        ["analytics-breakdown", startDate, endDate],
+        async () => {
+            return await api.get(
+                `/api/analytics/breakdown?start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`,
+                authHeaders(token)
+            );
+        },
+        {
+            select: (res) => {
+                const payload = res?.data ?? {};
+                return {
+                    topReferrers: Array.isArray(payload.topReferrers) ? payload.topReferrers : [],
+                    devices: Array.isArray(payload.devices) ? payload.devices : [],
+                };
+            },
+            enabled: Boolean(token && startDate && endDate),
+            /** Starter plan receives 403 by design — do not funnel that to a global error page. */
+            retry: (failureCount, error) =>
+                failureCount < 3 && error?.response?.status !== 403,
+            onError:
+                typeof onError === "function"
+                    ? (err) => {
+                          if (err?.response?.status === 403) return;
+                          onError(err);
+                      }
+                    : undefined,
+            staleTime: 5000
+        }
+    );
+};
+
+export const downloadAnalyticsCsv = async (token, startDate, endDate) => {
+    const res = await api.get(
+        `/api/analytics/export.csv?start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}`,
+        {
+            ...authHeaders(token),
+            responseType: "blob",
+        }
+    );
+    return res?.data;
 };

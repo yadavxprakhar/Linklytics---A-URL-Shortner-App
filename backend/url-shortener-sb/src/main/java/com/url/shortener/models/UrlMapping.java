@@ -16,6 +16,11 @@ public class UrlMapping {
     private String shortUrl;
     private int clickCount = 0;
     private LocalDateTime createdDate;
+    private LocalDateTime expiresAt;
+
+    /** When present, redirect requires password (checked against this hash). */
+    @Column(length = 100)
+    private String passwordHash;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

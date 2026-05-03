@@ -11,7 +11,7 @@ const AmbientDarkBackground = () => {
     return (
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-[1] min-h-full w-full bg-[radial-gradient(ellipse_110%_80%_at_50%_-20%,#17255433_0%,#050a14_48%,#050a14_100%)]"
+        className="pointer-events-none absolute inset-0 -z-[1] min-h-full w-full bg-[radial-gradient(ellipse_110%_80%_at_50%_-20%,#312e8133_0%,#050a14_48%,#050a14_100%)]"
       />
     );
   }
@@ -42,8 +42,14 @@ const AmbientDarkBackground = () => {
       {/* Solid base */}
       <div className="absolute inset-0 bg-[#050a14]" />
 
+      {/* Starfield */}
+      <div className="lx-starfield absolute inset-0 opacity-[0.35]" />
+
       {/* Slow-moving mesh */}
       <div className="lx-ambient-mesh absolute inset-0 opacity-[0.42]" />
+
+      {/* Subtle vertical beams */}
+      <div className="lx-hero-beams absolute inset-0 opacity-[0.55]" />
 
       {/* Soft vignette so content stays readable */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_100%_100%_at_50%_120%,transparent_35%,#050a1488_82%,#050a14ee_100%)]" />
@@ -80,6 +86,10 @@ const AmbientDarkBackground = () => {
         }}
         transition={orbTransitionC}
       />
+
+      {/* Horizon arc (bottom glow) */}
+      <div className="lx-hero-arc absolute -bottom-[22vh] left-1/2 h-[62vh] w-[120vw] -translate-x-1/2 blur-[1px] opacity-[0.95]" />
+      <div className="absolute -bottom-[18vh] left-1/2 h-[48vh] w-[110vw] -translate-x-1/2 bg-[radial-gradient(ellipse_110%_70%_at_50%_110%,rgb(255_255_255_/_0.08)_0%,transparent_45%)] opacity-[0.55]" />
 
       {/* Subtle film grain */}
       <div

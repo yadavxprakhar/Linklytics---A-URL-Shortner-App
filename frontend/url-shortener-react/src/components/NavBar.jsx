@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useStoreContext } from "../contextApi/ContextApi";
 import { LightChromeAmbient, LightChromeFrost } from "./LightChromeStack";
 
@@ -39,6 +40,7 @@ function navLinkTone(isActive) {
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { token, setToken, theme, toggleTheme } = useStoreContext();
   const path = useLocation().pathname;
   const [open, setOpen] = useState(false);
@@ -58,12 +60,20 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const mainNav = [
-    { to: "/", label: "Home" },
-    { to: "/about", label: "About" },
-    { to: "/privacy", label: "Privacy" },
-    { to: token ? "/dashboard" : "/login", label: "Dashboard" },
-  ];
+  const mainNav = useMemo(
+    () => [
+      { key: "home", to: "/", labelKey: "nav.home" },
+      { key: "pricing", to: "/#pricing", labelKey: "nav.pricing" },
+      { key: "about", to: "/about", labelKey: "nav.about" },
+      { key: "privacy", to: "/privacy", labelKey: "nav.privacy" },
+      {
+        key: "dashboard",
+        to: token ? "/dashboard" : "/login",
+        labelKey: "nav.dashboard",
+      },
+    ],
+    [token],
+  );
 
   const headerSurface = scrolled
     ? "border-[#E2E8F0]/90 shadow-nav-scrolled dark:border-white/[0.08] dark:bg-[rgba(10,14,26,0.92)] dark:shadow-nav-scrolled-dark dark:backdrop-blur-2xl"
@@ -104,16 +114,15 @@ const Navbar = () => {
         {/* Center — pills + migrating layoutId (portfolio pattern) */}
         <nav
           className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-2 md:flex"
-          aria-label="Main"
+          aria-label={t("aria.mainNav")}
         >
           <ul className="flex items-center gap-1 lg:gap-2">
-            {mainNav.map(({ to: href, label }) => {
+            {mainNav.map(({ to: href, key, labelKey }) => {
+              const label = t(labelKey);
               const active =
-                label === "Dashboard"
-                  ? path === "/dashboard"
-                  : path === href;
+                key === "dashboard" ? path === "/dashboard" : path === href;
               return (
-                <li key={label}>
+                <li key={key}>
                   <MotionLink
                     to={href}
                     onClick={() => setOpen(false)}
@@ -155,9 +164,7 @@ const Navbar = () => {
             onClick={toggleTheme}
             className="rounded-lg p-2.5 text-lx-muted outline-none ring-offset-white transition-colors duration-200 hover:bg-black/[0.04] hover:text-[#0f172a] focus-visible:ring-2 focus-visible:ring-blue-500/55 dark:hover:bg-white/[0.08] dark:hover:text-[#e2e8f0] dark:ring-offset-[#0f172a]"
             aria-label={
-              theme === "dark"
-                ? "Switch to light mode"
-                : "Switch to dark mode"
+              theme === "dark" ? t("aria.themeToLight") : t("aria.themeToDark")
             }
           >
             {theme === "dark" ? (
@@ -175,7 +182,7 @@ const Navbar = () => {
               className="lx-btn-nav-login hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/55 md:inline-flex"
               onClick={() => setOpen(false)}
             >
-              Log in
+              {t("auth.login")}
             </MotionLink>
           ) : null}
 
@@ -187,7 +194,7 @@ const Navbar = () => {
               className="lx-btn-primary hidden rounded-xl px-5 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/55 md:inline-flex"
               onClick={() => setOpen(false)}
             >
-              Sign up
+              {t("auth.signup")}
             </MotionLink>
           ) : (
             <motion.button
@@ -197,7 +204,7 @@ const Navbar = () => {
               onClick={onLogOutHandler}
               className="lx-btn-secondary hidden rounded-xl px-5 py-2.5 md:inline-flex"
             >
-              Log out
+              {t("auth.logout")}
             </motion.button>
           )}
 
@@ -207,7 +214,7 @@ const Navbar = () => {
             className="rounded-lg p-2.5 text-lx-muted outline-none transition-colors duration-200 hover:bg-black/[0.04] hover:text-[#0f172a] focus-visible:ring-2 focus-visible:ring-blue-500/55 dark:hover:bg-white/[0.08] md:hidden dark:hover:text-[#e2e8f0]"
             aria-expanded={open}
             aria-controls="mobile-menu"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t("aria.closeMenu") : t("aria.openMenu")}
             onClick={() => setOpen((v) => !v)}
           >
             <motion.span
@@ -236,18 +243,17 @@ const Navbar = () => {
             <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-5">
               <motion.nav
                 className="flex flex-col gap-1"
-                aria-label="Mobile main"
+                aria-label={t("aria.mobileNav")}
                 variants={mobileContainerVariants}
                 initial="hidden"
                 animate="show"
               >
-                {mainNav.map(({ to: href, label }) => {
+                {mainNav.map(({ to: href, key, labelKey }) => {
+                  const label = t(labelKey);
                   const mobileActive =
-                    label === "Dashboard"
-                      ? path === "/dashboard"
-                      : path === href;
+                    key === "dashboard" ? path === "/dashboard" : path === href;
                   return (
-                    <motion.div key={label} variants={mobileItemVariants}>
+                    <motion.div key={key} variants={mobileItemVariants}>
                       <MotionLink
                         to={href}
                         whileHover={{ scale: 1.01 }}
@@ -274,7 +280,7 @@ const Navbar = () => {
                       className="lx-btn-nav-login rounded-xl px-4 py-3 text-center text-sm"
                       onClick={() => setOpen(false)}
                     >
-                      Log in
+                      {t("auth.login")}
                     </MotionLink>
                     <MotionLink
                       to="/register"
@@ -282,7 +288,7 @@ const Navbar = () => {
                       className="lx-btn-primary rounded-lg px-4 py-3 text-center text-sm"
                       onClick={() => setOpen(false)}
                     >
-                      Sign up
+                      {t("auth.signup")}
                     </MotionLink>
                   </>
                 ) : (
@@ -292,7 +298,7 @@ const Navbar = () => {
                     onClick={onLogOutHandler}
                     className="col-span-2 lx-btn-secondary rounded-lg py-3 text-sm"
                   >
-                    Log out
+                    {t("auth.logout")}
                   </motion.button>
                 )}
               </div>

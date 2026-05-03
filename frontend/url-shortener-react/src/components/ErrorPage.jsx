@@ -1,10 +1,18 @@
 import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { fadeUpMountProps, tapScale } from "../utils/motionVariants";
 
-const ErrorPage = ({ message }) => {
+const ErrorPage = ({ message, variant = "generic" }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const title =
+    variant === "notFound" ? t("error.notFoundTitle") : t("error.title");
+  const body =
+    message ??
+    (variant === "notFound" ? t("error.notFoundPage") : t("error.unexpected"));
 
   return (
     <div className="lx-error-shell">
@@ -17,11 +25,9 @@ const ErrorPage = ({ message }) => {
         </div>
         <div className="space-y-3">
           <h1 className="text-[1.75rem] font-extrabold tracking-tight text-lx-foreground sm:text-[2rem]">
-            Something went wrong
+            {title}
           </h1>
-          <p className="text-[0.9375rem] leading-relaxed text-lx-muted">
-            {message ?? "Unexpected error — try again soon."}
-          </p>
+          <p className="text-[0.9375rem] leading-relaxed text-lx-muted">{body}</p>
         </div>
         <motion.button
           type="button"
@@ -29,7 +35,7 @@ const ErrorPage = ({ message }) => {
           className="lx-btn-primary px-10"
           {...tapScale}
         >
-          Back to home
+          {t("error.backHome")}
         </motion.button>
       </motion.div>
     </div>

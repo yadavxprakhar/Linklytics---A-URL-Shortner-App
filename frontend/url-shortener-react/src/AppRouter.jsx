@@ -1,4 +1,5 @@
 import { Route, Routes, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Navbar from "./components/NavBar";
 import ShortenUrlPage from "./components/ShortenUrlPage";
 import { Toaster } from "react-hot-toast";
@@ -6,6 +7,10 @@ import Footer from "./components/Footer";
 import LandingPage from "./components/LandingPage";
 import AboutPage from "./components/AboutPage";
 import PrivacyPage from "./components/PrivacyPage";
+import TermsPage from "./components/TermsPage";
+import CookiePage from "./components/CookiePage";
+import AccessibilityPage from "./components/AccessibilityPage";
+import PrivacyManagerPage from "./components/PrivacyManagerPage";
 import RegisterPage from "./components/RegisterPage";
 import LoginPage from "./components/LoginPage";
 import DashboardLayout from "./components/Dashboard/DashboardLayout";
@@ -22,10 +27,20 @@ const shellSurface = (dark) =>
     : "relative overflow-x-hidden flex min-h-screen flex-col bg-transparent text-lx-foreground motion-safe:transition-colors motion-safe:duration-[480ms] motion-safe:ease-out";
 
 const AppRouter = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const { theme } = useStoreContext();
   const hideHeaderFooter = pathname.startsWith("/s");
   const isDark = theme === "dark";
+
+  useEffect(() => {
+    if (!hash) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    const id = hash.replace("#", "");
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [pathname, hash]);
 
   return (
     <div className={shellSurface(isDark)}>
@@ -90,6 +105,38 @@ const AppRouter = () => {
               </PageFade>
             }
           />
+          <Route
+            path="/terms"
+            element={
+              <PageFade>
+                <TermsPage />
+              </PageFade>
+            }
+          />
+          <Route
+            path="/cookie"
+            element={
+              <PageFade>
+                <CookiePage />
+              </PageFade>
+            }
+          />
+          <Route
+            path="/accessibility"
+            element={
+              <PageFade>
+                <AccessibilityPage />
+              </PageFade>
+            }
+          />
+          <Route
+            path="/privacy-manager"
+            element={
+              <PageFade>
+                <PrivacyManagerPage />
+              </PageFade>
+            }
+          />
           <Route path="/s/:url" element={<ShortenUrlPage />} />
 
           <Route
@@ -135,7 +182,7 @@ const AppRouter = () => {
             path="*"
             element={
               <PageFade>
-                <ErrorPage message="We can't seem to find the page you're looking for" />
+                <ErrorPage variant="notFound" />
               </PageFade>
             }
           />
