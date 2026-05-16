@@ -15,7 +15,7 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/subscription")
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;

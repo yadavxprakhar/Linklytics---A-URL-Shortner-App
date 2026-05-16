@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class SubscriptionService {
 
     public static final double ANNUAL_DISCOUNT_RATE = 0.17;
@@ -57,8 +57,8 @@ public class SubscriptionService {
         ));
     }
 
-    private UrlMappingRepository urlMappingRepository;
-    private UserRepository userRepository;
+    private final UrlMappingRepository urlMappingRepository;
+    private final UserRepository userRepository;
 
     public PricingCatalogDTO getPublicCatalog() {
         List<PricingPlanDTO> plans = List.of(

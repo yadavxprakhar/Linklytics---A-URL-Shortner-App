@@ -14,7 +14,7 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/payments/razorpay")
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class PaymentController {
 
     private final RazorpayPaymentService razorpayPaymentService;

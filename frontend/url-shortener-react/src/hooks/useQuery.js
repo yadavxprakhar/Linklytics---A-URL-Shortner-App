@@ -26,7 +26,10 @@ export const useFetchMyShortUrls = (token, onError) => {
                 );
                 return rows;
             },
-            onError,
+            onError: (err) => {
+                if (err?.response?.status === 403) return;
+                if (typeof onError === "function") onError(err);
+            },
             staleTime: 5000
           }
         );
@@ -62,7 +65,10 @@ export const useFetchAnalyticsOverview = (token, startDate, endDate, onError) =>
                 };
             },
             enabled: Boolean(token && startDate && endDate),
-            onError,
+            onError: (err) => {
+                if (err?.response?.status === 403) return;
+                if (typeof onError === "function") onError(err);
+            },
             staleTime: 5000
         }
     );

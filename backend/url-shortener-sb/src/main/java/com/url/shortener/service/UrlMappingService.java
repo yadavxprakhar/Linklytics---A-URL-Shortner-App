@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class UrlMappingService {
 
     public enum OwnedShortUrlDeleteResult {
@@ -38,10 +38,10 @@ public class UrlMappingService {
         DELETED
     }
 
-    private UrlMappingRepository urlMappingRepository;
-    private ClickEventRepository clickEventRepository;
-    private PasswordEncoder passwordEncoder;
-    private SubscriptionService subscriptionService;
+    private final UrlMappingRepository urlMappingRepository;
+    private final ClickEventRepository clickEventRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final SubscriptionService subscriptionService;
 
     public UrlMappingDTO createShortUrl(String originalUrl, User user) {
         if (user != null) {
@@ -163,7 +163,11 @@ public class UrlMappingService {
     }
 
     public Map<LocalDate, Long> getTotalClicksByUserAndDate(User user, LocalDate start, LocalDate end) {
+        if (user == null) return new HashMap<>();
         List<UrlMapping> urlMappings = urlMappingRepository.findByUser(user);
+        if (urlMappings.isEmpty()) {
+            return new HashMap<>();
+        }
         List<ClickEvent> clickEvents = clickEventRepository.findByUrlMappingInAndClickDateBetween(urlMappings, start.atStartOfDay(), end.plusDays(1).atStartOfDay());
         return clickEvents.stream()
                 .collect(Collectors.groupingBy(click -> click.getClickDate().toLocalDate(), Collectors.counting()));
@@ -259,6 +263,14 @@ public class UrlMappingService {
                     return new AnalyticsDailyDTO(d, safe.getOrDefault(d, 0L));
                 })
                 .toList();
+    }
+
+    public String ensureProtocol(String url) {
+        if (url == null) return null;
+        if (!url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
+            return "https://" + url;
+        }
+        return url;
     }
 
     public UrlMapping getOriginalUrl(String shortUrl) {

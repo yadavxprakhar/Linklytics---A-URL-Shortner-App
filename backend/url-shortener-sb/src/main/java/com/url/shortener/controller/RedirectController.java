@@ -14,10 +14,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 
 @RestController
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class RedirectController {
 
-    private UrlMappingService urlMappingService;
+    private final UrlMappingService urlMappingService;
 
     @GetMapping("/{shortUrl}")
     public ResponseEntity<Void> redirect(
@@ -36,7 +36,7 @@ public class RedirectController {
                 return ResponseEntity.status(401).build();
             }
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add("Location", urlMapping.getOriginalUrl());
+            httpHeaders.add("Location", urlMappingService.ensureProtocol(urlMapping.getOriginalUrl()));
             return ResponseEntity.status(302).headers(httpHeaders).build();
         } else {
             return ResponseEntity.notFound().build();

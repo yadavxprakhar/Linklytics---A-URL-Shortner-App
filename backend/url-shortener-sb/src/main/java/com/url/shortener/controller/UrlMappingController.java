@@ -29,12 +29,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/urls")
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class UrlMappingController {
-    private UrlMappingService urlMappingService;
-    private UserService userService;
-    private QrCodeService qrCodeService;
-    private SubscriptionService subscriptionService;
+    private final UrlMappingService urlMappingService;
+    private final UserService userService;
+    private final QrCodeService qrCodeService;
+    private final SubscriptionService subscriptionService;
+
+    @org.springframework.beans.factory.annotation.Value("${frontend.url}")
+    private String frontendUrl;
 
     private static final String ANON_SHORTEN_COOKIE = "lx_anon_shorten_used";
 
@@ -42,17 +45,20 @@ public class UrlMappingController {
 //    https://abc.com/QN7XOa0a --> https://example.com
 
     @PostMapping("/shorten")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<UrlMappingDTO> createShortUrl(@RequestBody Map<String, String> request,
-                                                        Principal principal){
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> createShortUrl(@RequestBody Map<String, String> request,
+                                                         Principal principal){
         String originalUrl = request.get("originalUrl");
+        if (originalUrl == null || originalUrl.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "originalUrl is required"));
+        }
         User user = userService.findByUsername(principal.getName());
-        UrlMappingDTO urlMappingDTO = urlMappingService.createShortUrl(originalUrl, user);
+        UrlMappingDTO urlMappingDTO = urlMappingService.createShortUrl(originalUrl.trim(), user);
         return ResponseEntity.ok(urlMappingDTO);
     }
 
     @PostMapping("/shorten/advanced")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createShortUrlAdvanced(
             @RequestBody AdvancedShortenRequest request,
             Principal principal
@@ -94,8 +100,8 @@ public class UrlMappingController {
 
         subscriptionService.recordQrGeneration(user);
 
-        String shortLink = "/" + dto.getShortUrl();
-        byte[] png = qrCodeService.generatePng(shortLink, 360);
+        String fullFrontendUrl = frontendUrl.replaceAll("/$", "") + "/s/" + dto.getShortUrl();
+        byte[] png = qrCodeService.generatePng(fullFrontendUrl, 360);
         String base64 = java.util.Base64.getEncoder().encodeToString(png);
         return ResponseEntity.ok(Map.of(
                 "url", dto,
@@ -148,7 +154,7 @@ public class UrlMappingController {
 
 
     @GetMapping("/myurls")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<UrlMappingDTO>> getUserUrls(Principal principal){
         User user = userService.findByUsername(principal.getName());
         List<UrlMappingDTO> urls = urlMappingService.getUrlsByUser(user);
@@ -156,7 +162,7 @@ public class UrlMappingController {
     }
 
     @DeleteMapping("/{shortUrl}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteShortUrl(@PathVariable String shortUrl, Principal principal) {
         User user = userService.findByUsername(principal.getName());
         return switch (urlMappingService.deleteShortUrlOwnedBy(user, shortUrl)) {
@@ -167,24 +173,8 @@ public class UrlMappingController {
     }
 
 
-    @GetMapping("/analytics/{shortUrl}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<ClickEventDTO>> getUrlAnalytics(@PathVariable String shortUrl,
-                                                               @RequestParam("startDate") String startDate,
-                                                               @RequestParam("endDate") String endDate){
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        LocalDateTime start = LocalDateTime.parse(startDate, formatter);
-        LocalDateTime end = LocalDateTime.parse(endDate, formatter);
-        List<ClickEventDTO> clickEventDTOS = urlMappingService.getClickEventsByDate(shortUrl, start, end);
-        if (clickEventDTOS == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(clickEventDTOS);
-    }
-
-
     @GetMapping("/totalClicks")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<LocalDate, Long>> getTotalClicksByDate(Principal principal,
                                                                      @RequestParam("startDate") String startDate,
                                                                      @RequestParam("endDate") String endDate){

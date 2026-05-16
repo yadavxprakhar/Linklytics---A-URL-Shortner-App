@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/public/pricing")
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class PricingController {
 
     private final SubscriptionService subscriptionService;

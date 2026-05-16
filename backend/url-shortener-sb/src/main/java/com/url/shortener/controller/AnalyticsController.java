@@ -24,7 +24,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/analytics")
-@AllArgsConstructor
+@lombok.RequiredArgsConstructor
 public class AnalyticsController {
 
     private final UrlMappingService urlMappingService;
@@ -32,7 +32,7 @@ public class AnalyticsController {
     private final SubscriptionService subscriptionService;
 
     @GetMapping("/overview")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AnalyticsOverviewDTO> overview(
             Principal principal,
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -43,7 +43,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/links/{shortUrl}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<LinkAnalyticsDTO> linkAnalytics(
             Principal principal,
             @PathVariable String shortUrl,
@@ -59,7 +59,7 @@ public class AnalyticsController {
     }
 
     @GetMapping("/breakdown")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AnalyticsBreakdownDTO> breakdown(
             Principal principal,
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -71,7 +71,7 @@ public class AnalyticsController {
     }
 
     @GetMapping(value = "/export.csv", produces = "text/csv")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> exportCsv(
             Principal principal,
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
